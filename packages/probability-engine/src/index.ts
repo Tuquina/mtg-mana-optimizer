@@ -1,5 +1,10 @@
+export type PlayDraw = 'play' | 'draw';
+
+const EPSILON = 1e-12;
+
 /** Compute n choose k. */
 export const combination = (n: number, k: number): number => {
+  if (!Number.isInteger(n) || !Number.isInteger(k) || n < 0) return 0;
   if (k < 0 || k > n) return 0;
   if (k === 0 || k === n) return 1;
 
@@ -21,6 +26,10 @@ export const hypergeometricPmf = (
   draws: number,
   observedSuccesses: number,
 ): number => {
+  if (populationSize <= 0 || draws < 0 || draws > populationSize) return 0;
+  if (successStates < 0 || successStates > populationSize) return 0;
+  if (observedSuccesses < 0 || observedSuccesses > draws) return 0;
+
   const numerator =
     combination(successStates, observedSuccesses) *
     combination(populationSize - successStates, draws - observedSuccesses);
@@ -36,41 +45,82 @@ export const hypergeometricAtLeast = (
   draws: number,
   minimumSuccesses: number,
 ): number => {
+  if (minimumSuccesses <= 0) return 1;
+
   let sum = 0;
   for (let k = minimumSuccesses; k <= draws; k += 1) {
     sum += hypergeometricPmf(populationSize, successStates, draws, k);
   }
 
-  return sum;
+  return Math.max(0, Math.min(1, sum));
 };
 
-/** Probability of hitting a land drop by a given turn on play/draw. */
-export const landDropConsistencyByTurn = (
+/** Number of cards seen by the start of turn T (inclusive draw step). */
+export const cardsSeenByTurn = (turn: number, mode: PlayDraw): number => {
+  if (turn < 1) return 0;
+  return mode === 'play' ? 7 + (turn - 1) : 7 + turn;
+};
+
+/** Probability of having at least N lands by turn T. */
+export const landHitProbabilityByTurn = (
+  deckSize: number,
   landCount: number,
+  minimumLands: number,
   turn: number,
-  onPlay = true,
+  mode: PlayDraw,
 ): number => {
-  const cardsSeen = onPlay ? 7 + (turn - 1) : 8 + (turn - 1);
-  return hypergeometricAtLeast(60, landCount, cardsSeen, turn);
+  const draws = cardsSeenByTurn(turn, mode);
+  return hypergeometricAtLeast(deckSize, landCount, draws, minimumLands);
+};
+
+/**
+ * Probability of having at least P colored sources by turn T,
+ * while also having at least T lands to make natural land drops.
+ */
+export const coloredSourcesByTurnProbability = (
+  deckSize: number,
+  landCount: number,
+  coloredSourceCount: number,
+  requiredSources: number,
+  turn: number,
+  mode: PlayDraw,
+): number => {
+  const cardsSeen = cardsSeenByTurn(turn, mode);
+  const minLandsNeeded = turn;
+  let probability = 0;
+
+  for (let landsDrawn = minLandsNeeded; landsDrawn <= cardsSeen; landsDrawn += 1) {
+    const pLandsDrawn = hypergeometricPmf(deckSize, landCount, cardsSeen, landsDrawn);
+    const pColoredGivenLands = hypergeometricAtLeast(
+      landCount,
+      coloredSourceCount,
+      landsDrawn,
+      requiredSources,
+    );
+    probability += pLandsDrawn * pColoredGivenLands;
+  }
+
+  return Math.abs(probability) < EPSILON ? 0 : Math.max(0, Math.min(1, probability));
 };
 
 /** Minimum colored sources needed to meet a turn consistency target. */
 export const findMinimumColoredSources = (
+  deckSize: number,
   turn: number,
   requiredPips: number,
   targetProbability: number,
   landCount: number,
-  onPlay = true,
+  mode: PlayDraw,
 ): number => {
-  const cardsSeen = onPlay ? 7 + (turn - 1) : 8 + (turn - 1);
-
   for (let sourceCount = requiredPips; sourceCount <= landCount; sourceCount += 1) {
-    let probability = 0;
-    for (let landsDrawn = turn; landsDrawn <= cardsSeen; landsDrawn += 1) {
-      const landDrawProbability = hypergeometricPmf(60, landCount, cardsSeen, landsDrawn);
-      const coloredGivenLands = hypergeometricAtLeast(landCount, sourceCount, landsDrawn, requiredPips);
-      probability += landDrawProbability * coloredGivenLands;
-    }
+    const probability = coloredSourcesByTurnProbability(
+      deckSize,
+      landCount,
+      sourceCount,
+      requiredPips,
+      turn,
+      mode,
+    );
 
     if (probability >= targetProbability) {
       return sourceCount;

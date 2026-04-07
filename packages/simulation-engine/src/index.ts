@@ -1,4 +1,4 @@
-import { landDropConsistencyByTurn } from '@mtg-mana-optimizer/probability-engine';
+import { landHitProbabilityByTurn } from '@mtg-mana-optimizer/probability-engine';
 
 export interface GoldfishSimulationResult {
   turn3LandHit: number;
@@ -8,7 +8,7 @@ export interface GoldfishSimulationResult {
 
 /** Lightweight deterministic baseline before Monte Carlo expansion. */
 export const simulateLandDropsBaseline = (landCount: number): GoldfishSimulationResult => ({
-  turn3LandHit: landDropConsistencyByTurn(landCount, 3, true),
-  turn4LandHit: landDropConsistencyByTurn(landCount, 4, true),
-  turn5LandHit: landDropConsistencyByTurn(landCount, 5, true),
+  turn3LandHit: landHitProbabilityByTurn(60, landCount, 3, 3, 'play'),
+  turn4LandHit: landHitProbabilityByTurn(60, landCount, 4, 4, 'play'),
+  turn5LandHit: landHitProbabilityByTurn(60, landCount, 5, 5, 'play'),
 });
