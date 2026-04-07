@@ -1,5 +1,11 @@
 import type { CurveBucketLabel } from './mana-curve';
-import type { DeckCard, ManaColor } from './types';
+import type {
+  ColorConsistencyResult,
+  ColorSourceRequirement,
+  DeckCard,
+  ManaColor,
+  TurnBasedCastingRequirement,
+} from './types';
 
 export interface ExplanationDto {
   summary: string;
@@ -47,6 +53,9 @@ export interface ColoredSourceTargetDto {
 
 export interface ColoredSourceRecommendationDto {
   targets: ColoredSourceTargetDto[];
+  requirements: TurnBasedCastingRequirement[];
+  consistency: ColorConsistencyResult[];
+  untappedSourceRequirements: ColorSourceRequirement[];
   explanation: ExplanationDto;
 }
 

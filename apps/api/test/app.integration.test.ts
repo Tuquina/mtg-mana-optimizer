@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import { AppModule } from '../src/app.module';
-import { sampleStandardDecklist } from '@mtg-mana-optimizer/shared';
+import { sampleColoredSourceAnalysisOptions, sampleStandardDecklist } from '@mtg-mana-optimizer/shared';
 
 describe('Analysis API integration', () => {
   let app: INestApplication;
@@ -61,10 +61,11 @@ describe('Analysis API integration', () => {
   it('returns colored source recommendation endpoint response', async () => {
     const response = await request(app.getHttpServer())
       .post('/analysis/colored-sources')
-      .send({ decklistText: sampleStandardDecklist })
+      .send({ decklistText: sampleStandardDecklist, coloredSourceOptions: sampleColoredSourceAnalysisOptions })
       .expect(201);
 
     expect(response.body.coloredSourceRecommendation.targets.length).toBeGreaterThan(0);
+    expect(response.body.coloredSourceRecommendation.consistency.length).toBeGreaterThan(0);
   });
 
   it('returns optimization endpoint response', async () => {

@@ -37,6 +37,7 @@ export class AppService {
     const coloredSourceRecommendation = buildColoredSourceRecommendation(
       parsedDeck,
       landCountRecommendation.recommendedLandCount,
+      request.coloredSourceOptions,
     );
     const optimization = buildOptimizationSuggestions(parsedDeck);
 
@@ -83,6 +84,7 @@ export class AppService {
       coloredSourceRecommendation: buildColoredSourceRecommendation(
         parsedDeck,
         landCountRecommendation.recommendedLandCount,
+        request.coloredSourceOptions,
       ),
     };
   }

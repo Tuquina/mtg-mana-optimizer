@@ -1,4 +1,7 @@
 import type {
+  ColoredSourceAnalysisOptions,
+  ColorConsistencyResult,
+  ColorSourceRequirement,
   ColoredSourceRecommendationDto,
   DeckCard,
   DeckWarningDto,
@@ -12,6 +15,7 @@ import {
   coloredSourcesByTurnProbability,
   findMinimumColoredSources,
   landHitProbabilityByTurn,
+  untappedColoredSourcesByTurnProbability,
 } from '@mtg-mana-optimizer/probability-engine';
 
 const DECK_SIZE = 60;
@@ -70,11 +74,20 @@ export const buildLandCountRecommendation = (cards: DeckCard[]): LandCountRecomm
 export const buildColoredSourceRecommendation = (
   cards: DeckCard[],
   recommendedLandCount: number,
+  options: ColoredSourceAnalysisOptions = {},
 ): ColoredSourceRecommendationDto => {
+  const mode = options.mode ?? 'both';
+  const defaultThreshold = options.targetProbability ?? 0.8;
+  const minimumUntappedByTurn = options.minimumUntappedByTurn ?? {};
+
   const colors = new Set<ManaColor>();
   for (const card of cards) {
     for (const color of card.colors) colors.add(color);
   }
+
+  const requirements: ColoredSourceRecommendationDto['requirements'] = [];
+  const consistency: ColorConsistencyResult[] = [];
+  const untappedSourceRequirements: ColorSourceRequirement[] = [];
 
   const targets = [...colors].map((color) => {
     const requiredPips = Math.max(
@@ -82,15 +95,69 @@ export const buildColoredSourceRecommendation = (
       ...cards.filter((c) => !c.cardTypes.includes('Land')).map((c) => c.colorPipRequirements[color] ?? 0),
     );
     const turn = requiredPips >= 2 ? 3 : 2;
-    const targetProbability = requiredPips >= 2 ? 0.7 : 0.85;
+    const targetProbability =
+      options.perColorThresholds?.[color] ??
+      (requiredPips >= 2 ? defaultThreshold : Math.max(defaultThreshold, 0.85));
+    const minimumUntappedSources = Math.max(requiredPips, minimumUntappedByTurn[turn] ?? 0);
     const recommendedSources = findMinimumColoredSources(
       DECK_SIZE,
       turn,
       requiredPips,
       targetProbability,
       recommendedLandCount,
+      mode === 'draw' ? 'draw' : 'play',
+    );
+
+    const requirement = {
+      turn,
+      mode,
+      minimumLands: turn,
+      targetProbability,
+      colorRequirements: [{ color, requiredSources: requiredPips, minimumUntappedSources }],
+    };
+    requirements.push(requirement);
+
+    const probabilityOnPlay = coloredSourcesByTurnProbability(
+      DECK_SIZE,
+      recommendedLandCount,
+      recommendedSources,
+      requiredPips,
+      turn,
       'play',
     );
+    const probabilityOnDraw = coloredSourcesByTurnProbability(
+      DECK_SIZE,
+      recommendedLandCount,
+      recommendedSources,
+      requiredPips,
+      turn,
+      'draw',
+    );
+    const untappedOnPlay = untappedColoredSourcesByTurnProbability(
+      DECK_SIZE,
+      recommendedLandCount,
+      recommendedSources,
+      minimumUntappedSources,
+      turn,
+      'play',
+    );
+    const untappedOnDraw = untappedColoredSourcesByTurnProbability(
+      DECK_SIZE,
+      recommendedLandCount,
+      recommendedSources,
+      minimumUntappedSources,
+      turn,
+      'draw',
+    );
+
+    untappedSourceRequirements.push({ color, requiredSources: requiredPips, minimumUntappedSources });
+    consistency.push({
+      requirement,
+      probabilityOnPlay,
+      probabilityOnDraw,
+      meetsThresholdOnPlay: probabilityOnPlay >= targetProbability && untappedOnPlay >= targetProbability,
+      meetsThresholdOnDraw: probabilityOnDraw >= targetProbability && untappedOnDraw >= targetProbability,
+    });
 
     return {
       color,
@@ -98,32 +165,21 @@ export const buildColoredSourceRecommendation = (
       turn,
       targetProbability,
       recommendedSources,
-      probabilityOnPlay: coloredSourcesByTurnProbability(
-        DECK_SIZE,
-        recommendedLandCount,
-        recommendedSources,
-        requiredPips,
-        turn,
-        'play',
-      ),
-      probabilityOnDraw: coloredSourcesByTurnProbability(
-        DECK_SIZE,
-        recommendedLandCount,
-        recommendedSources,
-        requiredPips,
-        turn,
-        'draw',
-      ),
+      probabilityOnPlay,
+      probabilityOnDraw,
     };
   });
 
   return {
     targets,
+    requirements,
+    consistency,
+    untappedSourceRequirements,
     explanation: {
       summary: 'Colored source targets are solved with conditional hypergeometric composition.',
       details: [
-        'For each color, we solve the minimum number of sources required to meet probability threshold on the play.',
-        'Reported play/draw probabilities include both land-count and colored-source constraints.',
+        'For each color, we solve minimum sources required to satisfy configurable probability thresholds.',
+        'Reported play/draw consistency also checks minimum untapped colored sources for early turns.',
       ],
     },
   };

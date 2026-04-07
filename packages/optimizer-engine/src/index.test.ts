@@ -6,6 +6,7 @@ import {
   buildManaCurveAnalysis,
   buildOptimizationSuggestions,
 } from './index';
+import { sampleColoredSourceAnalysisOptions } from '@mtg-mana-optimizer/shared';
 
 const sampleCards: DeckCard[] = [
   {
@@ -47,9 +48,15 @@ describe('optimizer-engine', () => {
 
   it('returns colored source recommendation with explanation', () => {
     const landRecommendation = buildLandCountRecommendation(sampleCards);
-    const result = buildColoredSourceRecommendation(sampleCards, landRecommendation.recommendedLandCount);
+    const result = buildColoredSourceRecommendation(
+      sampleCards,
+      landRecommendation.recommendedLandCount,
+      sampleColoredSourceAnalysisOptions,
+    );
     expect(result.targets.length).toBe(1);
     expect(result.targets[0]?.color).toBe('R');
+    expect(result.consistency[0]?.requirement.mode).toBe('both');
+    expect(result.untappedSourceRequirements[0]?.minimumUntappedSources).toBeGreaterThanOrEqual(1);
   });
 
   it('returns optimization warnings and suggestions', () => {

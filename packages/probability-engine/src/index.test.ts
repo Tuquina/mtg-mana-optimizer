@@ -7,6 +7,9 @@ import {
   hypergeometricAtLeast,
   hypergeometricPmf,
   landHitProbabilityByTurn,
+  probabilityAtLeastColoredSourcesByTurn,
+  probabilityAtLeastLandsByTurn,
+  untappedColoredSourcesByTurnProbability,
 } from './index';
 
 describe('probability-engine', () => {
@@ -40,6 +43,19 @@ describe('probability-engine', () => {
   it('computes colored source probability with deterministic expected value', () => {
     const p = coloredSourcesByTurnProbability(60, 24, 14, 2, 3, 'play');
     expect(p).toBeCloseTo(0.6269795437393147, 12);
+  });
+
+  it('provides framework-agnostic aliases for land and colored source probabilities', () => {
+    expect(probabilityAtLeastLandsByTurn(60, 24, 4, 4, 'play')).toBeCloseTo(0.6317853730297426, 12);
+    expect(probabilityAtLeastColoredSourcesByTurn(60, 24, 14, 2, 3, 'play')).toBeCloseTo(
+      0.6269795437393147,
+      12,
+    );
+  });
+
+  it('computes untapped colored source probability deterministically', () => {
+    const p = untappedColoredSourcesByTurnProbability(60, 24, 14, 2, 3, 'draw');
+    expect(p).toBeCloseTo(0.7048298028445453, 12);
   });
 
   it('finds minimum colored sources for a target probability', () => {

@@ -53,3 +53,36 @@ export interface ValidationResult {
   valid: boolean;
   errors: string[];
 }
+
+/** Required colored source count for a specific color by a target turn. */
+export interface ColorSourceRequirement {
+  color: ManaColor;
+  requiredSources: number;
+  minimumUntappedSources?: number;
+}
+
+/** Casting requirement bundle evaluated by turn and play/draw mode. */
+export interface TurnBasedCastingRequirement {
+  turn: number;
+  mode: 'play' | 'draw' | 'both';
+  minimumLands: number;
+  targetProbability: number;
+  colorRequirements: ColorSourceRequirement[];
+}
+
+/** Result of evaluating one turn-based colored consistency requirement. */
+export interface ColorConsistencyResult {
+  requirement: TurnBasedCastingRequirement;
+  probabilityOnPlay: number;
+  probabilityOnDraw: number;
+  meetsThresholdOnPlay: boolean;
+  meetsThresholdOnDraw: boolean;
+}
+
+/** Configuration for colored source consistency analysis. */
+export interface ColoredSourceAnalysisOptions {
+  mode?: 'play' | 'draw' | 'both';
+  targetProbability?: number;
+  perColorThresholds?: Partial<Record<ManaColor, number>>;
+  minimumUntappedByTurn?: Partial<Record<number, number>>;
+}
