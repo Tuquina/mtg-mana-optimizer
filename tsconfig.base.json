@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mtg-mana-optimizer/domain": ["packages/domain/src"],
+      "@mtg-mana-optimizer/deck-parser": ["packages/deck-parser/src"],
+      "@mtg-mana-optimizer/mana-curve-engine": ["packages/mana-curve-engine/src"],
+      "@mtg-mana-optimizer/probability-engine": ["packages/probability-engine/src"],
+      "@mtg-mana-optimizer/simulation-engine": ["packages/simulation-engine/src"],
+      "@mtg-mana-optimizer/optimizer-engine": ["packages/optimizer-engine/src"],
+      "@mtg-mana-optimizer/shared": ["packages/shared/src"]
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@mtg-mana-optimizer/optimizer-engine",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:unit": "vitest run"
+  },
+  "dependencies": {
+    "@mtg-mana-optimizer/domain": "0.1.0",
+    "@mtg-mana-optimizer/mana-curve-engine": "0.1.0",
+    "@mtg-mana-optimizer/probability-engine": "0.1.0",
+    "@mtg-mana-optimizer/simulation-engine": "0.1.0"
+  }
+}
