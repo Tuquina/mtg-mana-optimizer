@@ -1,4 +1,5 @@
 import type {
+  ColoredSourceAnalysisOptions,
   ColoredSourceRecommendationDto,
   DeckAnalysisDto,
   LandCountRecommendationDto,
@@ -8,6 +9,7 @@ import type {
 
 export interface DeckAnalysisRequest {
   decklistText: string;
+  coloredSourceOptions?: ColoredSourceAnalysisOptions;
 }
 
 export interface ManaCurveAnalysisResponse {

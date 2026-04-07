@@ -2,6 +2,16 @@ export type PlayDraw = 'play' | 'draw';
 
 const EPSILON = 1e-12;
 
+/**
+ * Probability engine notes:
+ * - All calculations are pure combinatorics (hypergeometric distribution).
+ * - We model draws without replacement from a fixed deck population.
+ * - Turn-based probabilities are computed at the start of turn T using play/draw card-seen counts.
+ * - Colored source consistency is modeled conditionally: P(lands drawn) * P(colored hits | lands drawn).
+ *
+ * This module is intentionally framework-agnostic and side-effect free.
+ */
+
 /** Compute n choose k. */
 export const combination = (n: number, k: number): number => {
   if (!Number.isInteger(n) || !Number.isInteger(k) || n < 0) return 0;
@@ -73,6 +83,9 @@ export const landHitProbabilityByTurn = (
   return hypergeometricAtLeast(deckSize, landCount, draws, minimumLands);
 };
 
+/** Framework-agnostic helper alias for land hit probabilities by turn. */
+export const probabilityAtLeastLandsByTurn = landHitProbabilityByTurn;
+
 /**
  * Probability of having at least P colored sources by turn T,
  * while also having at least T lands to make natural land drops.
@@ -102,6 +115,32 @@ export const coloredSourcesByTurnProbability = (
 
   return Math.abs(probability) < EPSILON ? 0 : Math.max(0, Math.min(1, probability));
 };
+
+/** Framework-agnostic helper alias for colored source hit probabilities by turn. */
+export const probabilityAtLeastColoredSourcesByTurn = coloredSourcesByTurnProbability;
+
+/**
+ * Probability of having at least N untapped colored sources by turn T.
+ *
+ * This uses the same conditional hypergeometric structure as colored source probability,
+ * but with untapped-color source states as the success population.
+ */
+export const untappedColoredSourcesByTurnProbability = (
+  deckSize: number,
+  landCount: number,
+  untappedColoredSourceCount: number,
+  minimumUntappedSources: number,
+  turn: number,
+  mode: PlayDraw,
+): number =>
+  coloredSourcesByTurnProbability(
+    deckSize,
+    landCount,
+    untappedColoredSourceCount,
+    minimumUntappedSources,
+    turn,
+    mode,
+  );
 
 /** Minimum colored sources needed to meet a turn consistency target. */
 export const findMinimumColoredSources = (
