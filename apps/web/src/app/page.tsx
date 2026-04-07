@@ -33,10 +33,10 @@ export default function HomePage(): JSX.Element {
       {analysis ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, marginTop: 24 }}>
           <section><h3>Parsed Deck Preview</h3><ul>{analysis.parsedDeck.map((card) => <li key={card.name}>{card.quantity}x {card.name}</li>)}</ul></section>
-          <section><h3>Mana Curve Chart</h3><ul>{analysis.manaCurve.map((bucket) => <li key={bucket.bucket}>MV {bucket.bucket}: {bucket.count}</li>)}</ul></section>
-          <section><h3>Land Recommendation</h3><p>Recommended lands: {analysis.recommendedLandCount}</p><p>Average nonland mana value: {analysis.averageManaValueNonLands.toFixed(2)}</p></section>
-          <section><h3>Colored Source Analysis</h3><ul>{Object.entries(analysis.colorSourceTargets).map(([color, target]) => <li key={color}>{color}: {target} sources</li>)}</ul></section>
-          <section style={{ gridColumn: '1 / span 2' }}><h3>Recommendations</h3><ul>{analysis.recommendations.map((item) => <li key={item}>{item}</li>)}</ul></section>
+          <section><h3>Mana Curve Chart</h3><ul>{analysis.manaCurveAnalysis.byManaValue.map((bucket) => <li key={bucket.bucket}>MV {bucket.bucket}: {bucket.count}</li>)}</ul></section>
+          <section><h3>Land Recommendation</h3><p>Recommended lands: {analysis.landCountRecommendation.recommendedLandCount}</p><p>Average nonland mana value: {analysis.manaCurveAnalysis.averageManaValueNonLands.toFixed(2)}</p></section>
+          <section><h3>Colored Source Analysis</h3><ul>{analysis.coloredSourceRecommendation.targets.map((target) => <li key={target.color}>{target.color}: {target.recommendedSources} sources (T{target.turn}, {Math.round(target.targetProbability * 100)}%)</li>)}</ul></section>
+          <section style={{ gridColumn: '1 / span 2' }}><h3>Warnings</h3><ul>{analysis.optimization.warnings.map((item) => <li key={item.code}>{item.message}</li>)}</ul></section>
         </div>
       ) : null}
     </main>
