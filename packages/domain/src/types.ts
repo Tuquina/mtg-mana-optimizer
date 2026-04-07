@@ -13,6 +13,19 @@ export type CardType =
   | 'Battle'
   | 'Other';
 
+/** Explicit colored mana-pip requirement value object. */
+export interface ManaPipRequirement {
+  color: ManaColor;
+  count: number;
+}
+
+/** Parsed mana cost value object with derived metadata. */
+export interface ManaCost {
+  raw: string;
+  manaValue: number;
+  pipRequirements: ManaPipRequirement[];
+}
+
 /** Standard deck card entry with analyzer-specific metadata. */
 export interface DeckCard {
   name: string;
@@ -26,11 +39,14 @@ export interface DeckCard {
   expectedCastBucket: number;
 }
 
-/** Canonical main + sideboard model. */
-export interface DeckList {
+/** Canonical deck aggregate root (main + sideboard). */
+export interface Deck {
   mainDeck: DeckCard[];
   sideboard: DeckCard[];
 }
+
+/** Backward-compatible alias for legacy references. */
+export type DeckList = Deck;
 
 /** Validation output for format constraints. */
 export interface ValidationResult {

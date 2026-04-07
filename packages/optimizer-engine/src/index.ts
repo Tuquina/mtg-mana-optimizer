@@ -16,23 +16,28 @@ import {
 
 const DECK_SIZE = 60;
 
-const toBuckets = (histogram: Record<string, number>) =>
-  Object.entries(histogram)
-    .map(([bucket, count]) => ({ bucket, count }))
-    .sort((a, b) => a.bucket.localeCompare(b.bucket));
+const toBuckets = (buckets: { bucket: string; count: number }[]) => buckets;
 
+/** Build API DTO for mana curve analysis using the domain mana-curve aggregate. */
 export const buildManaCurveAnalysis = (cards: DeckCard[]): ManaCurveAnalysisDto => {
   const curve = analyzeManaCurve(cards);
-  const earlyDensity = (curve.playPatternCurve['1'] ?? 0) + (curve.playPatternCurve['2'] ?? 0);
+  const earlyDensity =
+    (curve.playPattern.buckets.find((bucket) => bucket.bucket === '1')?.count ?? 0) +
+    (curve.playPattern.buckets.find((bucket) => bucket.bucket === '2')?.count ?? 0);
 
   return {
-    byManaValue: toBuckets(curve.histogram),
-    byExpectedCast: toBuckets(curve.playPatternCurve),
-    averageManaValueNonLands: curve.averageManaValueNonLands,
+    byManaValue: toBuckets(curve.rulesBased.buckets),
+    byExpectedCast: toBuckets(curve.playPattern.buckets),
+    averageManaValueNonLands: curve.averageNonLandManaValue,
+    nonLandCardCount: curve.nonLandCardCount,
+    manaValuePeakBucket: curve.rulesBased.peakBucket,
+    manaValueGapBuckets: curve.rulesBased.gapBuckets,
+    expectedCastPeakBucket: curve.playPattern.peakBucket,
+    expectedCastGapBuckets: curve.playPattern.gapBuckets,
     explanation: {
       summary: 'Mana curve computed from rules mana value and expected cast buckets.',
       details: [
-        `Average mana value for non-lands is ${curve.averageManaValueNonLands.toFixed(2)}.`,
+        `Average mana value for non-lands is ${curve.averageNonLandManaValue.toFixed(2)}.`,
         `Early expected-cast density (turns 1-2) is ${earlyDensity} cards.`,
       ],
     },
@@ -41,7 +46,7 @@ export const buildManaCurveAnalysis = (cards: DeckCard[]): ManaCurveAnalysisDto 
 
 export const buildLandCountRecommendation = (cards: DeckCard[]): LandCountRecommendationDto => {
   const curve = analyzeManaCurve(cards);
-  const recommendedLandCount = Math.round(16 + 3.14 * curve.averageManaValueNonLands);
+  const recommendedLandCount = Math.round(16 + 3.14 * curve.averageNonLandManaValue);
 
   const probabilities = [3, 4, 5].map((turn) => ({
     turn,
@@ -129,7 +134,7 @@ export const buildOptimizationSuggestions = (cards: DeckCard[]): OptimizationSug
   const warnings: DeckWarningDto[] = [];
   const suggestions: OptimizationSuggestionsDto['suggestions'] = [];
 
-  const topHeavy = (curve.histogram['6+'] ?? 0) >= 4;
+  const topHeavy = (curve.rulesBased.buckets.find((bucket) => bucket.bucket === '6+')?.count ?? 0) >= 4;
   if (topHeavy) {
     warnings.push({
       code: 'TOP_HEAVY_CURVE',
@@ -152,7 +157,9 @@ export const buildOptimizationSuggestions = (cards: DeckCard[]): OptimizationSug
     });
   }
 
-  const earlyDensity = (curve.playPatternCurve['1'] ?? 0) + (curve.playPatternCurve['2'] ?? 0);
+  const earlyDensity =
+    (curve.playPattern.buckets.find((bucket) => bucket.bucket === '1')?.count ?? 0) +
+    (curve.playPattern.buckets.find((bucket) => bucket.bucket === '2')?.count ?? 0);
   if (earlyDensity < 12) {
     warnings.push({
       code: 'LOW_EARLY_DENSITY',
@@ -166,9 +173,7 @@ export const buildOptimizationSuggestions = (cards: DeckCard[]): OptimizationSug
     suggestions,
     explanation: {
       summary: 'Warnings and suggestions are generated from curve-shape and play-pattern heuristics.',
-      details: [
-        `Detected ${warnings.length} warnings and ${suggestions.length} actionable suggestions.`,
-      ],
+      details: [`Detected ${warnings.length} warnings and ${suggestions.length} actionable suggestions.`],
     },
   };
 };

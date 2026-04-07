@@ -31,3 +31,9 @@ export interface OptimizationSuggestionsResponse {
 }
 
 export type DeckAnalysisResponse = DeckAnalysisDto;
+
+/** Response contract for the single vertical-slice endpoint dedicated to mana-curve flow. */
+export interface FullCurveAnalysisResponse {
+  parsedDeckSize: number;
+  manaCurveAnalysis: ManaCurveAnalysisDto;
+}
