@@ -1,3 +1,4 @@
+import type { CurveBucketLabel } from './mana-curve';
 import type { DeckCard, ManaColor } from './types';
 
 export interface ExplanationDto {
@@ -14,6 +15,11 @@ export interface ManaCurveAnalysisDto {
   byManaValue: CurveBucketDto[];
   byExpectedCast: CurveBucketDto[];
   averageManaValueNonLands: number;
+  nonLandCardCount: number;
+  manaValuePeakBucket: CurveBucketLabel | null;
+  manaValueGapBuckets: CurveBucketLabel[];
+  expectedCastPeakBucket: CurveBucketLabel | null;
+  expectedCastGapBuckets: CurveBucketLabel[];
   explanation: ExplanationDto;
 }
 

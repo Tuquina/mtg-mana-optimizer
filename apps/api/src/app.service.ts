@@ -11,6 +11,7 @@ import type {
   ColoredSourceRecommendationResponse,
   DeckAnalysisRequest,
   DeckAnalysisResponse,
+  FullCurveAnalysisResponse,
   LandCountRecommendationResponse,
   ManaCurveAnalysisResponse,
   OptimizationSuggestionsResponse,
@@ -45,6 +46,16 @@ export class AppService {
       landCountRecommendation,
       coloredSourceRecommendation,
       optimization,
+    };
+  }
+
+  /** Build the full mana-curve vertical-slice response from a raw decklist request. */
+  analyzeFullCurve(request: DeckAnalysisRequest): FullCurveAnalysisResponse {
+    const parsedDeck = this.parseAndValidateDeck(request.decklistText);
+
+    return {
+      parsedDeckSize: parsedDeck.reduce((total, card) => total + card.quantity, 0),
+      manaCurveAnalysis: buildManaCurveAnalysis(parsedDeck),
     };
   }
 

@@ -29,6 +29,17 @@ describe('Analysis API integration', () => {
     expect(response.body.optimization.warnings).toBeDefined();
   });
 
+
+  it('returns full mana curve vertical-slice response', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/analysis/curve-analysis')
+      .send({ decklistText: sampleStandardDecklist })
+      .expect(201);
+
+    expect(response.body.manaCurveAnalysis.manaValuePeakBucket).toBeDefined();
+    expect(response.body.manaCurveAnalysis.expectedCastGapBuckets).toBeDefined();
+  });
+
   it('returns mana curve endpoint response', async () => {
     const response = await request(app.getHttpServer())
       .post('/analysis/mana-curve')

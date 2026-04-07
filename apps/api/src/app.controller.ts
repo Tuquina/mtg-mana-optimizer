@@ -3,6 +3,7 @@ import type {
   ColoredSourceRecommendationResponse,
   DeckAnalysisRequest,
   DeckAnalysisResponse,
+  FullCurveAnalysisResponse,
   LandCountRecommendationResponse,
   ManaCurveAnalysisResponse,
   OptimizationSuggestionsResponse,
@@ -11,11 +12,17 @@ import { AppService } from './app.service';
 
 @Controller('analysis')
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService = new AppService()) {}
 
   @Post()
   analyze(@Body() request: DeckAnalysisRequest): DeckAnalysisResponse {
     return this.appService.analyzeDeck(request);
+  }
+
+  /** Single endpoint for mana-curve vertical-slice analysis. */
+  @Post('curve-analysis')
+  fullCurve(@Body() request: DeckAnalysisRequest): FullCurveAnalysisResponse {
+    return this.appService.analyzeFullCurve(request);
   }
 
   @Post('mana-curve')

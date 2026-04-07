@@ -13,8 +13,8 @@ export const parseDecklist = (decklistText: string): DeckCard[] => {
         throw new Error(`Invalid deck line: ${line}`);
       }
 
-      const quantity = Number(match[1]);
-      const name = match[2];
+      const quantity = Number(match[1] ?? 0);
+      const name = match[2] ?? '';
       const seeded = cardCatalog[name];
 
       if (seeded) {
