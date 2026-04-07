@@ -1,0 +1,12 @@
+{
+  "name": "@mtg-mana-optimizer/domain",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mtg-mana-optimizer/shared": "0.1.0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@mtg-mana-optimizer/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node dist/main.js",
+    "start:dev": "ts-node src/main.ts",
+    "build": "tsc -p tsconfig.json",
+    "test:integration": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mtg-mana-optimizer/deck-parser": "0.1.0",
+    "@mtg-mana-optimizer/domain": "0.1.0",
+    "@mtg-mana-optimizer/mana-curve-engine": "0.1.0",
+    "@mtg-mana-optimizer/optimizer-engine": "0.1.0",
+    "@mtg-mana-optimizer/shared": "0.1.0",
+    "@nestjs/common": "^11.0.3",
+    "@nestjs/core": "^11.0.3",
+    "@nestjs/platform-express": "^11.0.3",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^11.0.3",
+    "supertest": "^7.0.0",
+    "ts-node": "^10.9.2",
+    "vitest": "^2.1.4"
+  }
+}
