@@ -99,10 +99,11 @@ export const buildColoredSourceRecommendation = (
       options.perColorThresholds?.[color] ??
       (requiredPips >= 2 ? defaultThreshold : Math.max(defaultThreshold, 0.85));
     const minimumUntappedSources = Math.max(requiredPips, minimumUntappedByTurn[turn] ?? 0);
+    const solvedRequiredSources = Math.max(requiredPips, minimumUntappedSources);
     const recommendedSources = findMinimumColoredSources(
       DECK_SIZE,
       turn,
-      requiredPips,
+      solvedRequiredSources,
       targetProbability,
       recommendedLandCount,
       mode === 'draw' ? 'draw' : 'play',

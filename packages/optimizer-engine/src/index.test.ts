@@ -59,6 +59,21 @@ describe('optimizer-engine', () => {
     expect(result.untappedSourceRequirements[0]?.minimumUntappedSources).toBeGreaterThanOrEqual(1);
   });
 
+  it('solves recommended sources against stricter untapped-source requirements', () => {
+    const landRecommendation = buildLandCountRecommendation(sampleCards);
+    const baseline = buildColoredSourceRecommendation(sampleCards, landRecommendation.recommendedLandCount, {
+      targetProbability: 0.85,
+    });
+    const withUntappedConstraint = buildColoredSourceRecommendation(sampleCards, landRecommendation.recommendedLandCount, {
+      targetProbability: 0.85,
+      minimumUntappedByTurn: { 2: 2 },
+    });
+
+    expect(withUntappedConstraint.targets[0]?.recommendedSources).toBeGreaterThan(
+      baseline.targets[0]?.recommendedSources ?? 0,
+    );
+  });
+
   it('returns optimization warnings and suggestions', () => {
     const result = buildOptimizationSuggestions(sampleCards);
     expect(result.warnings.length).toBeGreaterThan(0);
